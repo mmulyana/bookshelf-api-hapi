@@ -29,6 +29,14 @@ const routes = [
       const {name} = req.params
       return `upcoming book ${name}`
     }
+  },
+  {
+    method: 'GET',
+    path: '/search',
+    handler: (req, h) => {
+      const { name, author } = req.query
+      return `book name : ${name}, author ${author}`
+    }
   }
 ]
 
