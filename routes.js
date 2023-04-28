@@ -37,6 +37,14 @@ const routes = [
       const { name, author } = req.query
       return `book name : ${name}, author ${author}`
     }
+  },
+  {
+    method: 'POST',
+    path: '/login',
+    handler: (req, h) => {
+      const { username, password} = req.payload
+      return `welcome ${username}`
+    }
   }
 ]
 
