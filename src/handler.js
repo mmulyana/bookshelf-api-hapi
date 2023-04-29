@@ -62,7 +62,7 @@ const addBookHandler = (req, h) => {
     const response = h.response({
       status: 'success',
       message: 'Buku berhasil ditambahkan',
-      date: {
+      data: {
         bookId: id,
       },
     })
@@ -81,14 +81,20 @@ const addBookHandler = (req, h) => {
 
 const getAllBooksHandler = (req, h) => {
   const { name, finished, reading } = req.query
-  console.log(req.query)
+
   if (name) {
     const response = h.response({
       status: 'success',
       data: {
-        books: books.filter((book) =>
-          book.name.toLowerCase().includes(name.toLowerCase())
-        ),
+        books: books
+          .filter((book) =>
+            book.publisher.toLowerCase().includes(name.toLowerCase())
+          )
+          .map(({ id, name, publisher }) => ({
+            id,
+            name,
+            publisher,
+          })),
       },
     })
 
@@ -100,7 +106,22 @@ const getAllBooksHandler = (req, h) => {
     const response = h.response({
       status: 'success',
       data: {
-        books: finished === '1' ? books.filter(book => book.finished === true) : books.filter(book => book.finished === false),
+        books:
+          finished === 1
+            ? books
+                .filter((book) => book.finished === true)
+                .map(({ id, name, publisher }) => ({
+                  id,
+                  name,
+                  publisher,
+                }))
+            : books
+                .filter((book) => book.finished === false)
+                .map(({ id, name, publisher }) => ({
+                  id,
+                  name,
+                  publisher,
+                })),
       },
     })
 
@@ -112,7 +133,22 @@ const getAllBooksHandler = (req, h) => {
     const response = h.response({
       status: 'success',
       data: {
-        books: reading === '1' ? books.filter(book => book.reading === true) : books.filter(book => book.reading === false),
+        books:
+          reading === 1
+            ? books
+                .filter((book) => book.reading === true)
+                .map(({ id, name, publisher }) => ({
+                  id,
+                  name,
+                  publisher,
+                }))
+            : books
+                .filter((book) => book.reading === false)
+                .map(({ id, name, publisher }) => ({
+                  id,
+                  name,
+                  publisher,
+                })),
       },
     })
 
@@ -123,7 +159,11 @@ const getAllBooksHandler = (req, h) => {
   const response = h.response({
     status: 'success',
     data: {
-      books,
+      books: books.map(({ id, name, publisher }) => ({
+        id,
+        name,
+        publisher,
+      })),
     },
   })
 
@@ -136,7 +176,7 @@ const getBookByIdHandler = (req, h) => {
 
   const book = books.filter((book) => book.id === id)[0]
 
-  if (book !== undefined) {
+  if (book) {
     return {
       status: 'success',
       data: {
@@ -147,7 +187,7 @@ const getBookByIdHandler = (req, h) => {
 
   const response = h.response({
     status: 'fail',
-    message: 'buku tidak ditemukan',
+    message: 'Buku tidak ditemukan',
   })
 
   response.code(404)
@@ -171,7 +211,7 @@ const editBookByIdHandler = (req, h) => {
     const response = h.response({
       status: 'fail',
       message:
-        'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
+        'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
     })
 
     response.code(400)
@@ -210,7 +250,7 @@ const editBookByIdHandler = (req, h) => {
     }
     const response = h.response({
       status: 'success',
-      message: 'buku berhasil diperbarui',
+      message: 'Buku berhasil diperbarui',
     })
     response.code(200)
     return response
@@ -232,7 +272,7 @@ const deleteBookByIdHandler = (req, h) => {
     books.splice(index, 1)
     const response = h.response({
       status: 'success',
-      message: 'Catatan berhasil dihapus',
+      message: 'Buku berhasil dihapus',
     })
 
     response.code(200)
@@ -241,7 +281,7 @@ const deleteBookByIdHandler = (req, h) => {
 
   const response = h.response({
     status: 'fail',
-    message: 'Catatan gagal dihapus. Id tidak ditemukan',
+    message: 'Buku gagal dihapus. Id tidak ditemukan',
   })
   response.code(404)
   return response
