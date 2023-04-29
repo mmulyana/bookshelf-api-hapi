@@ -2,7 +2,7 @@ const { nanoid } = require('nanoid')
 const books = require('./books')
 
 const addBookHandler = (req, h) => {
-  if (!req.payload.hasOwnProperty('name') || !req.payload.name) {
+  if (!req.payload.name) {
     const response = h.response({
       status: 'fail',
       message: 'Gagal menambahkan buku. Mohon isi nama buku',
@@ -80,6 +80,46 @@ const addBookHandler = (req, h) => {
 }
 
 const getAllBooksHandler = (req, h) => {
+  const { name, finished, reading } = req.query
+  console.log(req.query)
+  if (name) {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: books.filter((book) =>
+          book.name.toLowerCase().includes(name.toLowerCase())
+        ),
+      },
+    })
+
+    response.code(200)
+    return response
+  }
+
+  if (finished) {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: finished === '1' ? books.filter(book => book.finished === true) : books.filter(book => book.finished === false),
+      },
+    })
+
+    response.code(200)
+    return response
+  }
+
+  if (reading) {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: reading === '1' ? books.filter(book => book.reading === true) : books.filter(book => book.reading === false),
+      },
+    })
+
+    response.code(200)
+    return response
+  }
+
   const response = h.response({
     status: 'success',
     data: {
@@ -117,7 +157,7 @@ const getBookByIdHandler = (req, h) => {
 const editBookByIdHandler = (req, h) => {
   const { id } = req.params
 
-  if (!req.payload.hasOwnProperty('name') || !req.payload.name) {
+  if (!req.payload.name) {
     const response = h.response({
       status: 'fail',
       message: 'Gagal memperbarui buku. Mohon isi nama buku',
@@ -152,6 +192,7 @@ const editBookByIdHandler = (req, h) => {
   const updatedAt = new Date().toISOString()
 
   const index = books.findIndex((book) => book.id === id)
+  const finished = pageCount === readPage
 
   if (index !== -1) {
     books[index] = {
@@ -165,6 +206,7 @@ const editBookByIdHandler = (req, h) => {
       readPage,
       reading,
       updatedAt,
+      finished,
     }
     const response = h.response({
       status: 'success',
@@ -187,7 +229,7 @@ const deleteBookByIdHandler = (req, h) => {
 
   const index = books.findIndex((book) => book.id === id)
   if (index !== -1) {
-    books.splice(index, 1);
+    books.splice(index, 1)
     const response = h.response({
       status: 'success',
       message: 'Catatan berhasil dihapus',
