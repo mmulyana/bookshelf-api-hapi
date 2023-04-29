@@ -2,30 +2,68 @@ const { nanoid } = require('nanoid')
 const books = require('./books')
 
 const addBookHandler = (req, h) => {
-  const { title, tags, body } = req.payload
+  if (!req.payload.hasOwnProperty('name') || !req.payload.name) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal menambahkan buku. Mohon isi nama buku',
+    })
+
+    response.code(400)
+    return response
+  }
+
+  if (req.payload.readPage > req.payload.pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message:
+        'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
+    })
+
+    response.code(400)
+    return response
+  }
+
+  const {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+  } = req.payload
+
   const id = nanoid(16)
-  const createdAt = new Date().toISOString()
-  const updatedAt = createdAt
+  const insertedAt = new Date().toISOString()
+  const updatedAt = insertedAt
+  const finished = pageCount === readPage
 
   const newBook = {
     id,
-    title,
-    tags,
-    body,
-    createdAt,
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+    finished,
+    insertedAt,
     updatedAt,
   }
 
   books.push(newBook)
 
-  const isSuccess = books.filter((book) => book.ud === id).length > 0
+  const isSuccess = books.filter((book) => book.id === id).length > 0
 
   if (isSuccess) {
     const response = h.response({
       status: 'success',
-      message: 'berhasil ditambah',
+      message: 'Buku berhasil ditambahkan',
       date: {
-        noteId: id,
+        bookId: id,
       },
     })
     response.code(201)
@@ -41,19 +79,24 @@ const addBookHandler = (req, h) => {
   return response
 }
 
-const getAllBooksHandler = () => ({
-  status: 'success',
-  data: {
-    books,
-  },
-})
+const getAllBooksHandler = (req, h) => {
+  const response = h.response({
+    status: 'success',
+    data: {
+      books,
+    },
+  })
+
+  response.code(200)
+  return response
+}
 
 const getBookByIdHandler = (req, h) => {
   const { id } = req.params
 
   const book = books.filter((book) => book.id === id)[0]
 
-  if (note !== undefined) {
+  if (book !== undefined) {
     return {
       status: 'success',
       data: {
@@ -74,23 +117,58 @@ const getBookByIdHandler = (req, h) => {
 const editBookByIdHandler = (req, h) => {
   const { id } = req.params
 
-  const { title, tags, body } = req.payload
+  if (!req.payload.hasOwnProperty('name') || !req.payload.name) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Mohon isi nama buku',
+    })
+
+    response.code(400)
+    return response
+  }
+
+  if (req.payload.readPage > req.payload.pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message:
+        'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
+    })
+
+    response.code(400)
+    return response
+  }
+
+  const {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+  } = req.payload
 
   const updatedAt = new Date().toISOString()
 
   const index = books.findIndex((book) => book.id === id)
 
   if (index !== -1) {
-    notes[index] = {
-      ...notes[index],
-      title,
-      tags,
-      body,
+    books[index] = {
+      ...books[index],
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
+      reading,
       updatedAt,
     }
     const response = h.response({
       status: 'success',
-      message: 'Catatan berhasil diperbarui',
+      message: 'buku berhasil diperbarui',
     })
     response.code(200)
     return response
@@ -98,7 +176,7 @@ const editBookByIdHandler = (req, h) => {
 
   const response = h.response({
     status: 'fail',
-    message: 'Gagal memperbarui catatan. Id tidak ditemukan',
+    message: 'Gagal memperbarui buku. Id tidak ditemukan',
   })
   response.code(404)
   return response
@@ -107,14 +185,14 @@ const editBookByIdHandler = (req, h) => {
 const deleteBookByIdHandler = (req, h) => {
   const { id } = req.params
 
-  const index = notes.findIndex((note) => note.id === id)
-
+  const index = books.findIndex((book) => book.id === id)
   if (index !== -1) {
-    notes.splice(index, 1)
+    books.splice(index, 1);
     const response = h.response({
       status: 'success',
       message: 'Catatan berhasil dihapus',
     })
+
     response.code(200)
     return response
   }
@@ -132,5 +210,5 @@ module.exports = {
   getAllBooksHandler,
   getBookByIdHandler,
   editBookByIdHandler,
-  deleteBookByIdHandler
+  deleteBookByIdHandler,
 }
